@@ -1,9 +1,23 @@
-import moment from 'moment';
 import { getId, OCPPDate } from '../common/help-functions';
-import { commands, logTypes, activeLog } from '../common/constants';
 
 
-export const sendCommand = (setLogs, settings, settingsState ) => (command, connector = 0) => {
+const metaDataType = {
+  connectorId: 0,
+  bootNotification: {},
+  RFIDTag: null,
+  status: null,
+  idTag: null,
+  meterStart: null,
+  meterStop: null,
+  currentMeterValue: null,
+}
+
+/**
+ * Send Command to OCPP Central System
+ * @param { string } command 
+ * @param { metaDataType } metaData
+ */
+export const sendCommand = (command, metaData) => {
   const id = getId()
   let message
 
@@ -12,15 +26,15 @@ export const sendCommand = (setLogs, settings, settingsState ) => (command, conn
       message = {}
       break;
     case 'BootNotification':
-      message = settingsState.bootNotification
+      message = metaData.bootNotification
       break;
     case 'Authorize':
-      message = { idTag: settingsState.mainSettings.RFIDTag }
+      message = { idTag: metaData.RFIDTag }
       break;
     case 'StatusNotification':
       message = {
-        connectorId: settings[connector].id,
-        status: settings[connector].status,
+        // connectorId: settings[connector].id,
+        // status: settings[connector].status,
         errorCode: 'NoError',
         info: '',
         timestamp: OCPPDate(new Date()),
@@ -28,56 +42,53 @@ export const sendCommand = (setLogs, settings, settingsState ) => (command, conn
         vendorErrorCode: ''
       }
       break;
-    case 'StartTransaction':
-      message = {
-        connectorId: settings[connector].id,
-        idTag: settings[connector].idTag,
-        meterStart: settings[connector].startMeterValue,
-        timestamp: OCPPDate(new Date()),
-        // reservationId: ''
-      }
-      break;
-    case 'StopTransaction':
-      message = {
-        // idTag: '',
-        meterStop: settings[connector].currentMeterValue,
-        timestamp: OCPPDate(new Date()),
-        transactionId: settings[connector].transactionId,
-        reason: settings[connector].stopReason,
-        // transactionData: ''
-      }
-      break;
-    case 'MeterValues':
-      message = {
-        connectorId: settings[connector].id,
-        transactionId: settings[connector].transactionId,
-        meterValue: [
-          {
-            timestamp: OCPPDate(new Date()),
-            sampledValue: [
-              { measurand: 'Voltage', phase: 'L1', unit: 'V', value: '222' },
-              { measurand: 'Voltage', phase: 'L2', unit: 'V', value: '223' },
-              { measurand: 'Voltage', phase: 'L3', unit: 'V', value: '223' },
-              { measurand: 'Current.Import', phase: 'L1', unit: 'A', value: '0' },
-              { measurand: 'Current.Import', phase: 'L2', unit: 'A', value: '0' },
-              { measurand: 'Current.Import', phase: 'L3', unit: 'A', value: '0' },
-              { measurand: 'Energy.Active.Import.Register', unit: 'Wh', value: settings[connector].currentMeterValue.toString() },
-              { measurand: 'Power.Active.Import', unit: 'W', value: '3290' }
-            ]
-          }
-        ]
-      }
-      break;
+    // case 'StartTransaction':
+    //   message = {
+    //     connectorId: settings[connector].id,
+    //     idTag: settings[connector].idTag,
+    //     meterStart: settings[connector].startMeterValue,
+    //     timestamp: OCPPDate(new Date()),
+    //     // reservationId: ''
+    //   }
+    //   break;
+    // case 'StopTransaction':
+    //   message = {
+    //     // idTag: '',
+    //     meterStop: settings[connector].currentMeterValue,
+    //     timestamp: OCPPDate(new Date()),
+    //     transactionId: settings[connector].transactionId,
+    //     reason: settings[connector].stopReason,
+    //     // transactionData: ''
+    //   }
+    //   break;
+    // case 'MeterValues':
+    //   message = {
+    //     connectorId: settings[connector].id,
+    //     transactionId: settings[connector].transactionId,
+    //     meterValue: [
+    //       {
+    //         timestamp: OCPPDate(new Date()),
+    //         sampledValue: [
+    //           { measurand: 'Voltage', phase: 'L1', unit: 'V', value: '222' },
+    //           { measurand: 'Voltage', phase: 'L2', unit: 'V', value: '223' },
+    //           { measurand: 'Voltage', phase: 'L3', unit: 'V', value: '223' },
+    //           { measurand: 'Current.Import', phase: 'L1', unit: 'A', value: '0' },
+    //           { measurand: 'Current.Import', phase: 'L2', unit: 'A', value: '0' },
+    //           { measurand: 'Current.Import', phase: 'L3', unit: 'A', value: '0' },
+    //           { measurand: 'Energy.Active.Import.Register', unit: 'Wh', value: settings[connector].currentMeterValue.toString() },
+    //           { measurand: 'Power.Active.Import', unit: 'W', value: '3290' }
+    //         ]
+    //       }
+    //     ]
+    //   }
+    //   break;
     default:
       message = {}
       break;
   }
 
-  const data = JSON.stringify([ 2, id, command, message ])
-  commands.push({ id, command, connector })
-
-  activeLog.push({ time: moment().format('HH:mm:ss'), type: logTypes.send, command, message: JSON.stringify(message) })
-  setLogs([ ...activeLog ])
-  settings.webSocket.send(data)
+  return {
+    ocppCommand: JSON.stringify([ 2, id, command, message ]),
+    lastCommand: { id, command, connector: metaData.connectorId || metaDataType.connectorId }
+  }
 }
-

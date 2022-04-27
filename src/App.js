@@ -11,7 +11,7 @@ import { chargePointSettings } from './Config/charge-point-settings';
 
 
 function App() {
-  const [settingsState, setSettingsState] = useState((JSON.parse(localStorage.getItem('OCPPSettings'))) || defaultSettings);
+  const [ settingsState, setSettingsState ] = useState((JSON.parse(localStorage.getItem('OCPPSettings'))) || defaultSettings);
   const [ settings, setSettings ] = useState(chargePointSettings)
   const [ logs, setLogs ] = useState([])
 
