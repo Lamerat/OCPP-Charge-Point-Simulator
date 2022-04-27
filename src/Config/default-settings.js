@@ -13,10 +13,10 @@ const defaultSettings = {
   },
 
   bootNotification: {
-    chargePointVendor: 'Elmo',
-    chargePointModel: 'Elmo-Virtual1',
-    chargePointSerialNumber: 'elm.001.13.1',
-    chargeBoxSerialNumber: 'elm.001.13.1.01',
+    chargePointVendor: 'Fidana',
+    chargePointModel: 'Fidana-Virtual',
+    chargePointSerialNumber: '0000008797',
+    chargeBoxSerialNumber: '0000008797',
     firmwareVersion: '0.9.87',
     iccid: '',
     imsi: '',
