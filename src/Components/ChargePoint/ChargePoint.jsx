@@ -9,10 +9,10 @@ import PropTypes from 'prop-types';
 
 
 
-const ChargePoint = ({ webSocket, setWebSocket }) => {
+const ChargePoint = ({ ws, setWs }) => {
   const startConnection = () => {
-    const ws = new WebSocket()
-    setWebSocket()
+    // const ws = new WebSocket()
+    
   }
 
   return (
@@ -43,8 +43,8 @@ const ChargePoint = ({ webSocket, setWebSocket }) => {
 
 
 ChargePoint.propTypes = {
-  WebSocket: PropTypes.any.isRequired,
-  setWebSocket: PropTypes.func.isRequired
+  ws: PropTypes.any.isRequired,
+  setWs: PropTypes.func.isRequired
 };
 
 export default ChargePoint

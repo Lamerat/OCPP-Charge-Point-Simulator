@@ -18,8 +18,9 @@ let meterValueInterval
 const Main = () => {
   const { logs, setLogs } = useContext(LogContext)
 
-  const [ webSocket, setWebSocket ] = useState(null)
+  const { settingsState } = useContext(SettingsContext)
 
+  const [ ws, setWs ] = useState(null)
   const [ helpAnchorEl, setHelpAnchorEl ] = useState(null)
   const [ helpText, setHelpText ] = useState('')
   
@@ -32,8 +33,8 @@ const Main = () => {
   useEffect(() => scrollToBottom(), [logs])
 
   const showHelpText = (event, type) => {
-    // const getData = (settingsState.stationSettings.filter(x => x.key === type))[0]
-    // setHelpText(`${type} set to ${getData.value} seconds`)
+    const getData = (settingsState.stationSettings.filter(x => x.key === type))[0]
+    setHelpText(`${type} set to ${getData.value} seconds`)
     setHelpAnchorEl(event.target)
   }
 
@@ -45,7 +46,7 @@ const Main = () => {
     <Container sx={{maxWidth: '1366px !important'}}>
       <Grid container spacing={3}>
         <Grid item xs={3.2}>
-          <ChargePoint />
+          <ChargePoint ws={ws} setWs={setWs} />
         </Grid>
         <Grid item xs={4.4}>
         {/* { connectedStatuses.includes(settings.status.status) ? <Connector id={settings.connector_1.id} /> : null } */}
