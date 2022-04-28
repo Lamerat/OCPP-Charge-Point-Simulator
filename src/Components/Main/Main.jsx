@@ -146,7 +146,7 @@ const Main = () => {
               </Box>
             </Box>
             <Divider sx={{ mt: 0.5, mb: 1.5 }} />
-            <Stack spacing={1} height={340} maxHeight={340} sx={{ overflowY: 'scroll', fontSize: 14 }}>
+            <Stack spacing={1} height={340} maxHeight={295} sx={{ overflowY: 'scroll', fontSize: 14 }}>
             {
               logs.map((el, index) => (
                 <Stack key={index} direction="row" color={el.type.color} spacing={2} divider={<Divider orientation="vertical" flexItem />}>
