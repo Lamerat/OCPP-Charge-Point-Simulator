@@ -7,17 +7,13 @@ import Connector from "../Connector/Connector";
 import SettingsContext from '../../Context/SettingsContext';
 import { pointStatus, connectedStatuses } from '../../Config/charge-point-settings';
 import { MonitorHeartOutlined, Speed, Clear } from "@mui/icons-material";
-import { logTypes, commands, connectorOne, connectorTwo } from "../../common/constants";
+import { logTypes, commands, connectors, connectorStatus } from "../../common/constants";
 import { sendCommand } from "../../OCPP/OCPP-Commands";
+
 
 
 let heartbeatInterval
 // let meterValueInterval
-
-const connectors = {
-  1: connectorOne,
-  2: connectorTwo,
-}
 
 const getTime = () => moment().format('HH:mm:ss')
 const logArray = []
@@ -29,11 +25,16 @@ const Main = () => {
   const [ logs, setLogs ] = useState(logArray)
   const [ status, setStatus ] = useState(pointStatus.disconnected)
   const [ conOne, setConOne ] = useState(connectors[1])
-  const [ conTow, setConTwo ] = useState(connectors[2])
+  const [ conTwo, setConTwo ] = useState(connectors[2])
 
   const [ initialBootNotification, setInitialBootNotification ] = useState(false)
   const [ helpAnchorEl, setHelpAnchorEl ] = useState(null)
   const [ helpText, setHelpText ] = useState('')
+
+  const updateConnector = {
+    1: setConOne,
+    2: setConTwo,
+  }
   
   const open = Boolean(helpAnchorEl);
 
@@ -41,27 +42,32 @@ const Main = () => {
   const scrollToBottom = () => logsEndRef.current?.scrollIntoView({ behavior: "smooth" })
   useEffect(() => scrollToBottom(), [logs])
 
+
   const showHelpText = (event, type) => {
     const getData = (settingsState.stationSettings.filter(x => x.key === type))[0]
     setHelpText(`${type} set to ${getData.value} seconds`)
     setHelpAnchorEl(event.target)
   }
 
+
   const updateLog = (record) => {
     logArray.push(record)
     setLogs([ ...logArray])
   }
+
 
   const clearLog = () => {
     logArray.length = 0
     setLogs([])
   }
 
+
   const centralSystemSend = (command, localCommand) => {
     ws.send(command)
     commands.push(localCommand)
     updateLog({ time: getTime(), type: logTypes.send, command: localCommand.command, message: command })
   }
+
 
   const incomingMessage = (id, message) => {
     const getCommand = (commands.filter(x => x.id === id))[0]
@@ -75,10 +81,20 @@ const Main = () => {
     updateLog({ time: getTime(), type: logTypes.message, command, message: JSON.stringify(message) })
     
     if (command === 'BootNotification' && !initialBootNotification && message.status === 'Accepted') {
+      // Send first heartbeat
       const result = sendCommand('Heartbeat', {})
       centralSystemSend(result.ocppCommand, result.lastCommand)
+
+      // Send connector(s) status(es)
+      for (let i = 1; i <= settingsState.mainSettings.numberOfConnectors; i++) {
+        const currentConnector = sendCommand('StatusNotification', { connectorId: i, status: connectors[i].status })
+        centralSystemSend(currentConnector.ocppCommand, currentConnector.lastCommand)
+      }
+
+      // Set initial boot to complete
       setInitialBootNotification(true)
 
+      // Set heartbeat interval
       const index = settingsState.stationSettings.findIndex(x => x.key === 'HeartbeatInterval')
       settingsState.stationSettings[index].value = message.interval
       heartbeatInterval = setInterval(() => {
@@ -89,6 +105,43 @@ const Main = () => {
 
     if (command === 'Authorize' && message.idTagInfo.status === 'Accepted') {
       setStatus(pointStatus.authorized)
+    }
+
+    if (command.command === 'StartTransaction' && message.idTagInfo.status === 'Accepted') {
+      connectors[connector].transactionId = message.transactionId
+      connectors[connector].inTransaction = true
+      connectors[connector].status = connectorStatus.Charging
+    }
+  }
+
+
+  const incomingRequest = (id, request, payload) => {
+    const acceptRespond = JSON.stringify([ 3, id, { status: 'Accepted' }])
+    const rejectRespond = JSON.stringify([ 3, id, { status: 'Rejected' }])
+    updateLog({ time: getTime(), type: logTypes.request, command: request, message: JSON.stringify(payload) })
+
+    const connId = payload.connectorId
+    const metaData = {}
+
+    switch (request) {
+      case 'RemoteStartTransaction':
+        if (connectors[connId].inTransaction) {
+          ws.send(rejectRespond)
+          return
+        }
+
+        ws.send(acceptRespond)
+        connectors[connId].idTag = payload.idTag
+        updateConnector[connId]({ ...connectors[connId] })
+
+        metaData.connectorId = connId
+        metaData.idTag = connectors[connId].idTag
+        metaData.startMeterValue = connectors[connId].startMeterValue
+        const newTransaction =  sendCommand('StartTransaction', metaData)
+        centralSystemSend(newTransaction.ocppCommand, newTransaction.lastCommand)
+        break;
+      default:
+        break;
     }
   }
 
@@ -111,6 +164,7 @@ const Main = () => {
         updateLog({ time: getTime(), type: logTypes.socket, message: 'Charge point disconnected' })
       }
       clearInterval(heartbeatInterval)
+      setInitialBootNotification(false)
       setStatus(status)
       setWs('')
     }
@@ -119,7 +173,7 @@ const Main = () => {
       const [ type, id, message, payload ] = JSON.parse(msg.data)
       switch (type) {
         case 2:
-          
+          incomingRequest(id, message, payload)
           break;
         case 3:
           incomingMessage(id, message)
@@ -138,10 +192,15 @@ const Main = () => {
         </Grid>
         <Grid item xs={4.4}>
         { connectedStatuses.includes(status.status)
-          ? <Connector id={1} status={status} centralSystemSend={centralSystemSend} settings={conOne} setSettings={setConOne} /> : null }
+          ? <Connector id={1} status={status} centralSystemSend={centralSystemSend} settings={conOne} setSettings={setConOne} />
+          : null
+        }
         </Grid>
         <Grid item xs={4.4}>
-          {/* { settingsState.mainSettings.numberOfConnectors === 2 && connectedStatuses.includes(settings.status.status) ? <Connector id={settings.connector_2.id} /> : null } */}
+          { settingsState.mainSettings.numberOfConnectors === 2 && connectedStatuses.includes(status.status)
+            ? <Connector id={2} status={status} centralSystemSend={centralSystemSend} settings={conTwo} setSettings={setConTwo} />
+            : null
+          }
         </Grid>
         <Grid item xs={12}>
           <Paper sx={{p: 2}}>

@@ -54,7 +54,7 @@ export const commands = []
 
 export const activeLog = []
 
-export const connectorOne = {
+const connectorOne = {
   connectorId: 1,
   startMeterValue: 0,
   currentMeterValue: 0,
@@ -65,7 +65,7 @@ export const connectorOne = {
   transactionId: 0,
 }
 
-export const connectorTwo = {
+const connectorTwo = {
   connectorId: 2,
   startMeterValue: 0,
   currentMeterValue: 0,
@@ -74,4 +74,10 @@ export const connectorTwo = {
   inTransaction: false,
   idTag: nanoid(20),
   transactionId: 0,
+}
+
+
+export const connectors = {
+  1: connectorOne,
+  2: connectorTwo,
 }

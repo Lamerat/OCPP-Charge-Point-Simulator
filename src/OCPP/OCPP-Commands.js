@@ -42,46 +42,46 @@ export const sendCommand = (command, metaData) => {
         vendorErrorCode: ''
       }
       break;
-    // case 'StartTransaction':
-    //   message = {
-    //     connectorId: settings[connector].id,
-    //     idTag: settings[connector].idTag,
-    //     meterStart: settings[connector].startMeterValue,
-    //     timestamp: OCPPDate(new Date()),
-    //     // reservationId: ''
-    //   }
-    //   break;
-    // case 'StopTransaction':
-    //   message = {
-    //     // idTag: '',
-    //     meterStop: settings[connector].currentMeterValue,
-    //     timestamp: OCPPDate(new Date()),
-    //     transactionId: settings[connector].transactionId,
-    //     reason: settings[connector].stopReason,
-    //     // transactionData: ''
-    //   }
-    //   break;
-    // case 'MeterValues':
-    //   message = {
-    //     connectorId: settings[connector].id,
-    //     transactionId: settings[connector].transactionId,
-    //     meterValue: [
-    //       {
-    //         timestamp: OCPPDate(new Date()),
-    //         sampledValue: [
-    //           { measurand: 'Voltage', phase: 'L1', unit: 'V', value: '222' },
-    //           { measurand: 'Voltage', phase: 'L2', unit: 'V', value: '223' },
-    //           { measurand: 'Voltage', phase: 'L3', unit: 'V', value: '223' },
-    //           { measurand: 'Current.Import', phase: 'L1', unit: 'A', value: '0' },
-    //           { measurand: 'Current.Import', phase: 'L2', unit: 'A', value: '0' },
-    //           { measurand: 'Current.Import', phase: 'L3', unit: 'A', value: '0' },
-    //           { measurand: 'Energy.Active.Import.Register', unit: 'Wh', value: settings[connector].currentMeterValue.toString() },
-    //           { measurand: 'Power.Active.Import', unit: 'W', value: '3290' }
-    //         ]
-    //       }
-    //     ]
-    //   }
-    //   break;
+    case 'StartTransaction':
+      message = {
+        connectorId: metaData.connectorId,
+        idTag: metaData.idTag,
+        meterStart: metaData.startMeterValue,
+        timestamp: OCPPDate(new Date()),
+        // reservationId: ''
+      }
+      break;
+    case 'StopTransaction':
+      message = {
+        // idTag: '',
+        meterStop: metaData.currentMeterValue,
+        timestamp: OCPPDate(new Date()),
+        transactionId: metaData.transactionId,
+        reason: metaData.stopReason,
+        // transactionData: ''
+      }
+      break;
+    case 'MeterValues':
+      message = {
+        connectorId: metaData.connectorId,
+        transactionId: metaData.transactionId,
+        meterValue: [
+          {
+            timestamp: OCPPDate(new Date()),
+            sampledValue: [
+              { measurand: 'Voltage', phase: 'L1', unit: 'V', value: '222' },
+              { measurand: 'Voltage', phase: 'L2', unit: 'V', value: '223' },
+              { measurand: 'Voltage', phase: 'L3', unit: 'V', value: '223' },
+              { measurand: 'Current.Import', phase: 'L1', unit: 'A', value: '0' },
+              { measurand: 'Current.Import', phase: 'L2', unit: 'A', value: '0' },
+              { measurand: 'Current.Import', phase: 'L3', unit: 'A', value: '0' },
+              { measurand: 'Energy.Active.Import.Register', unit: 'Wh', value: metaData.currentMeterValue.toString() },
+              { measurand: 'Power.Active.Import', unit: 'W', value: '3290' }
+            ]
+          }
+        ]
+      }
+      break;
     default:
       message = {}
       break;
