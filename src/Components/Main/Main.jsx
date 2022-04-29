@@ -7,12 +7,17 @@ import Connector from "../Connector/Connector";
 import SettingsContext from '../../Context/SettingsContext';
 import { pointStatus, connectedStatuses } from '../../Config/charge-point-settings';
 import { MonitorHeartOutlined, Speed, Clear } from "@mui/icons-material";
-import { logTypes, commands } from "../../common/constants";
+import { logTypes, commands, connectorOne, connectorTwo } from "../../common/constants";
 import { sendCommand } from "../../OCPP/OCPP-Commands";
 
 
 let heartbeatInterval
 // let meterValueInterval
+
+const connectors = {
+  1: connectorOne,
+  2: connectorTwo,
+}
 
 const getTime = () => moment().format('HH:mm:ss')
 const logArray = []
@@ -23,6 +28,9 @@ const Main = () => {
   const [ ws, setWs ] = useState('')
   const [ logs, setLogs ] = useState(logArray)
   const [ status, setStatus ] = useState(pointStatus.disconnected)
+  const [ conOne, setConOne ] = useState(connectors[1])
+  const [ conTow, setConTwo ] = useState(connectors[2])
+
   const [ initialBootNotification, setInitialBootNotification ] = useState(false)
   const [ helpAnchorEl, setHelpAnchorEl ] = useState(null)
   const [ helpText, setHelpText ] = useState('')
@@ -102,6 +110,7 @@ const Main = () => {
       } else {
         updateLog({ time: getTime(), type: logTypes.socket, message: 'Charge point disconnected' })
       }
+      clearInterval(heartbeatInterval)
       setStatus(status)
       setWs('')
     }
@@ -128,7 +137,8 @@ const Main = () => {
           <ChargePoint ws={ws} setWs={setWs} status={status} setStatus={setStatus} centralSystemSend={centralSystemSend} />
         </Grid>
         <Grid item xs={4.4}>
-        {/* { connectedStatuses.includes(settings.status.status) ? <Connector id={settings.connector_1.id} /> : null } */}
+        { connectedStatuses.includes(status.status)
+          ? <Connector id={1} status={status} centralSystemSend={centralSystemSend} settings={conOne} setSettings={setConOne} /> : null }
         </Grid>
         <Grid item xs={4.4}>
           {/* { settingsState.mainSettings.numberOfConnectors === 2 && connectedStatuses.includes(settings.status.status) ? <Connector id={settings.connector_2.id} /> : null } */}

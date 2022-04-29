@@ -30,9 +30,6 @@ export const pointStatus = {
 
 
 export const chargePointSettings = {
-  webSocket: null,
-  status: pointStatus.disconnected,
-  initialCommands: false,
   connector_1: {
       id: 1,
       startMeterValue: 0,

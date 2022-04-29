@@ -1,3 +1,6 @@
+import { nanoid } from 'nanoid';
+
+
 export const connectorStatus = {
   Available: 'Available',
   Preparing: 'Preparing',
@@ -50,3 +53,25 @@ export const stopReason = {
 export const commands = []
 
 export const activeLog = []
+
+export const connectorOne = {
+  connectorId: 1,
+  startMeterValue: 0,
+  currentMeterValue: 0,
+  status: connectorStatus.Available,
+  stopReason: stopReason.Remote,
+  inTransaction: false,
+  idTag: nanoid(20),
+  transactionId: 0,
+}
+
+export const connectorTwo = {
+  connectorId: 2,
+  startMeterValue: 0,
+  currentMeterValue: 0,
+  status: connectorStatus.Available,
+  stopReason: stopReason.Remote,
+  inTransaction: false,
+  idTag: nanoid(20),
+  transactionId: 0,
+}

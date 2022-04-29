@@ -33,8 +33,8 @@ export const sendCommand = (command, metaData) => {
       break;
     case 'StatusNotification':
       message = {
-        // connectorId: settings[connector].id,
-        // status: settings[connector].status,
+        connectorId: metaData.connectorId,
+        status: metaData.status,
         errorCode: 'NoError',
         info: '',
         timestamp: OCPPDate(new Date()),
