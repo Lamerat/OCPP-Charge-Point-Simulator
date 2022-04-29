@@ -13,7 +13,10 @@ import { sendCommand } from "../../OCPP/OCPP-Commands";
 
 
 let heartbeatInterval
-// let meterValueInterval
+let meterValueInterval = {
+  1: null,
+  2: null,
+}
 
 const getTime = () => moment().format('HH:mm:ss')
 const logArray = []
@@ -107,10 +110,36 @@ const Main = () => {
       setStatus(pointStatus.authorized)
     }
 
-    if (command.command === 'StartTransaction' && message.idTagInfo.status === 'Accepted') {
+    if (command === 'StartTransaction' && message.idTagInfo.status === 'Accepted') {
       connectors[connector].transactionId = message.transactionId
       connectors[connector].inTransaction = true
       connectors[connector].status = connectorStatus.Charging
+      updateConnector[connector]({ ...connectors[connector] })
+
+      const index = settingsState.stationSettings.findIndex(x => x.key === 'MeterValueSampleInterval')
+
+      meterValueInterval[connector] = setInterval(() => {
+        connectors[connector].currentMeterValue = connectors[connector].currentMeterValue + 50
+        updateConnector[connector]({ ...connectors[connector] })
+
+        const metaData = {
+          connectorId: connectors[connector].connectorId,
+          transactionId: connectors[connector].transactionId,
+          currentMeterValue: connectors[connector].currentMeterValue,
+        }
+
+        const result = sendCommand('MeterValues', metaData)
+        centralSystemSend(result.ocppCommand, result.lastCommand)
+      }, settingsState.stationSettings[index].value * 1000)
+    }
+
+    if (command === 'StopTransaction' && message.idTagInfo.status === 'Accepted') {
+      connectors[connector].startMeterValue = connectors[connector].currentMeterValue
+      connectors[connector].transactionId = 0
+      connectors[connector].inTransaction = false
+      connectors[connector].status = connectorStatus.Finishing
+      updateConnector[connector]({ ...connectors[connector] })
+      clearInterval(meterValueInterval[connector])
     }
   }
 
@@ -120,7 +149,7 @@ const Main = () => {
     const rejectRespond = JSON.stringify([ 3, id, { status: 'Rejected' }])
     updateLog({ time: getTime(), type: logTypes.request, command: request, message: JSON.stringify(payload) })
 
-    const connId = payload.connectorId
+    let connId = payload.connectorId
     const metaData = {}
 
     switch (request) {
@@ -139,6 +168,25 @@ const Main = () => {
         metaData.startMeterValue = connectors[connId].startMeterValue
         const newTransaction =  sendCommand('StartTransaction', metaData)
         centralSystemSend(newTransaction.ocppCommand, newTransaction.lastCommand)
+        break;
+      case 'RemoteStopTransaction':
+          connId = null
+          for (let i = 1; i <= settingsState.mainSettings.numberOfConnectors; i++) {
+            if (connectors[i].transactionId === payload.transactionId) connId = i
+          }
+
+        if (!connId) {
+          ws.send(rejectRespond)
+          return
+        }
+
+        ws.send(acceptRespond)
+        metaData.connectorId = connId
+        metaData.currentMeterValue = connectors[connId].currentMeterValue
+        metaData.transactionId = connectors[connId].transactionId
+        metaData.stopReason = connectors[connId].stopReason
+        const endTransaction =  sendCommand('StopTransaction', metaData)
+        centralSystemSend(endTransaction.ocppCommand, endTransaction.lastCommand)
         break;
       default:
         break;
@@ -164,6 +212,8 @@ const Main = () => {
         updateLog({ time: getTime(), type: logTypes.socket, message: 'Charge point disconnected' })
       }
       clearInterval(heartbeatInterval)
+      clearInterval(meterValueInterval[1])
+      clearInterval(meterValueInterval[2])
       setInitialBootNotification(false)
       setStatus(status)
       setWs('')
@@ -220,8 +270,8 @@ const Main = () => {
               logs.map((el, index) => (
                 <Stack key={index} direction="row" color={el.type.color} spacing={2} divider={<Divider orientation="vertical" flexItem />}>
                   <Box>{el.time}</Box> 
-                  <Box width={70} minWidth={70}>{el.type.text}</Box>
-                  <Box width={120} minWidth={120}>{el.command}</Box>
+                  <Box width={55} minWidth={55}>{el.type.text}</Box>
+                  <Box width={140} minWidth={140}>{el.command}</Box>
                   <Box>{el.message}</Box>
                 </Stack>)
               )

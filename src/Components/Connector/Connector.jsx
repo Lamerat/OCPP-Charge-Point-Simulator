@@ -31,6 +31,7 @@ const StyledButton = styled(Button)({
 
 const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => {
   const [ meterError, setMeterError ] = useState(false)
+  const [ localStatus, setLocalStatus ] = useState(connectorStatus.Available)
 
   const updateData = (field, data) => {
     if (field === 'currentMeterValue') {
@@ -39,6 +40,7 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
       const startValue = settings.startMeterValue
       startValue > data ? setMeterError(true) : setMeterError(false)
     }
+
     connectors[id] = { ...connectors[id], [field]: data }
     setSettings(connectors[id])
   }
@@ -47,6 +49,8 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
     const metaData = {}
     switch (command) {
       case 'StatusNotification':
+        connectors[id] = { ...connectors[id], status: localStatus }
+        setSettings(connectors[id])
         metaData.connectorId = id
         metaData.status = connectors[id].status
         break;
@@ -138,11 +142,12 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
           <InputLabel>Status</InputLabel>
           <Select
             fullWidth
-            value={settings.status}
+            value={localStatus}
             label='Status'
             size='small'
             name='status'
-            onChange={(e) => updateData(e.target.name, e.target.value)}
+            // onChange={(e) => updateData(e.target.name, e.target.value)}
+            onChange={(e) => setLocalStatus(e.target.value)}
           >
             { Object.keys(connectorStatus).map(x => <MenuItem key={x} value={connectorStatus[x]}>{connectorData[x].text}</MenuItem>) }
           </Select>
@@ -172,7 +177,7 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
             disabled={!settings.inTransaction}
             variant='contained'
             startIcon={<AddIcon />}
-            // onClick={() => updateMeterValue(settings[connectorName].currentMeterValue + 10)}
+            onClick={() => updateData('currentMeterValue', settings.currentMeterValue + 10)}
           />
         </FormGroup>
       </Grid>
