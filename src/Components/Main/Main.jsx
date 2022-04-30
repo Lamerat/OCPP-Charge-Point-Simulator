@@ -3,13 +3,11 @@ import { Container, Box, Typography, Tooltip, Divider, Grid, Paper, Stack , Popo
 import ChargePoint from '../ChargePoint/ChargePoint'
 import moment from "moment";
 import Connector from "../Connector/Connector";
-// import MainContext from "../../Context/MainContext";
 import SettingsContext from '../../Context/SettingsContext';
 import { pointStatus, connectedStatuses } from '../../Config/charge-point-settings';
 import { MonitorHeartOutlined, Speed, Clear } from "@mui/icons-material";
 import { logTypes, commands, connectors, connectorStatus } from "../../common/constants";
 import { sendCommand } from "../../OCPP/OCPP-Commands";
-
 
 
 let heartbeatInterval
@@ -20,6 +18,7 @@ let meterValueInterval = {
 
 const getTime = () => moment().format('HH:mm:ss')
 const logArray = []
+
 
 const Main = () => {
   const { settingsState } = useContext(SettingsContext)

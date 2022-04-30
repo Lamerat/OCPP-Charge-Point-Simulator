@@ -128,14 +128,7 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
         </FormControl>
       </Grid>
       <Grid item xs={6}>
-        <Button
-          fullWidth
-          variant='contained'
-          disabled={!settings.inTransaction}
-          onClick={() => sendRequest('StopTransaction')}
-        >
-          stop transaction
-        </Button>
+        <Button fullWidth variant='contained' disabled={!settings.inTransaction} onClick={() => sendRequest('StopTransaction')} > stop transaction </Button>
       </Grid>
       <Grid item xs={6}>
         <FormControl fullWidth>
@@ -146,7 +139,6 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
             label='Status'
             size='small'
             name='status'
-            // onChange={(e) => updateData(e.target.name, e.target.value)}
             onChange={(e) => setLocalStatus(e.target.value)}
           >
             { Object.keys(connectorStatus).map(x => <MenuItem key={x} value={connectorStatus[x]}>{connectorData[x].text}</MenuItem>) }
@@ -182,13 +174,7 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
         </FormGroup>
       </Grid>
       <Grid item xs={12}>
-      <Button
-        disabled={!settings.inTransaction}
-        fullWidth variant='contained'
-        onClick={() => sendRequest('MeterValues')}
-      >
-        Send Meter Value
-      </Button>
+      <Button disabled={!settings.inTransaction} fullWidth variant='contained' onClick={() => sendRequest('MeterValues')} >Send Meter Value</Button>
       </Grid>
     </Grid>
   </Paper>

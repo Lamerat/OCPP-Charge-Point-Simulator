@@ -12,6 +12,7 @@ const metaDataType = {
   currentMeterValue: null,
 }
 
+
 /**
  * Send Command to OCPP Central System
  * @param { string } command 
