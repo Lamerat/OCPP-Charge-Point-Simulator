@@ -139,6 +139,8 @@ const Main = () => {
       connectors[connector].status = connectorStatus.Finishing
       updateConnector[connector]({ ...connectors[connector] })
       clearInterval(meterValueInterval[connector])
+      const statusData = sendCommand('StatusNotification', { connectorId: connector, status: connectors[connector].status })
+      centralSystemSend(statusData.ocppCommand, statusData.lastCommand)
     }
   }
 

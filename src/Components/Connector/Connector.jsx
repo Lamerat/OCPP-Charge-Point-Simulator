@@ -60,6 +60,7 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
         metaData.startMeterValue = connectors[id].startMeterValue
         break;
       case 'StopTransaction':
+        metaData.connectorId = id
         metaData.currentMeterValue = connectors[id].currentMeterValue
         metaData.transactionId = connectors[id].transactionId
         metaData.stopReason = connectors[id].stopReason
