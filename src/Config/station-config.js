@@ -3,7 +3,7 @@ const stationSettings = {
         {
             key: 'AuthorizeRemoteTxRequests',
             readonly: true,
-            value: false
+            value: "false"
         },
         {
             key: 'ClockAlignedDataInterval',
@@ -28,12 +28,12 @@ const stationSettings = {
         {
             key: 'LocalAuthorizeOffline',
             readonly: true,
-            value: false
+            value: "false"
         },
         {
             key: 'LocalPreAuthorize',
             readonly: true,
-            value: false
+            value: "false"
         },
         {
             key: 'MeterValuesAlignedData',
@@ -48,12 +48,12 @@ const stationSettings = {
         {
             key: 'StopTransactionOnEVSideDisconnect',
             readonly: true,
-            value: true
+            value: "true"
         },
         {
             key: 'StopTransactionOnInvalidId',
             readonly: true,
-            value: true
+            value: "true"
         },
         {
             key: 'StopTxnAlignedData',
@@ -103,7 +103,7 @@ const stationSettings = {
         {
             key: 'UnlockConnectorOnEVSideDisconnect',
             readonly: true,
-            value: true
+            value: "true"
         },
         {
             key: 'ChargeProfileMaxStackLevel',

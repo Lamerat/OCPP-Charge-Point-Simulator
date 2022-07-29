@@ -63,6 +63,7 @@ const connectorOne = {
   inTransaction: false,
   idTag: nanoid(20),
   transactionId: 0,
+  simulateUnlockStatus: 'Unlocked',
 }
 
 const connectorTwo = {
@@ -74,6 +75,7 @@ const connectorTwo = {
   inTransaction: false,
   idTag: nanoid(20),
   transactionId: 0,
+  simulateUnlockStatus: 'UnlockFailed',
 }
 
 

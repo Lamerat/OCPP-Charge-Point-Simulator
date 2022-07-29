@@ -21,7 +21,7 @@ const logArray = []
 
 
 const Main = () => {
-  const { settingsState } = useContext(SettingsContext)
+  const { settingsState, setSettingsState } = useContext(SettingsContext)
   
   const [ ws, setWs ] = useState('')
   const [ logs, setLogs ] = useState(logArray)
@@ -188,6 +188,52 @@ const Main = () => {
         metaData.stopReason = connectors[connId].stopReason
         const endTransaction =  sendCommand('StopTransaction', metaData)
         centralSystemSend(endTransaction.ocppCommand, endTransaction.lastCommand)
+        break;
+      case 'TriggerMessage':
+        const { requestedMessage } = payload
+        if (!connectors[connId].inTransaction && requestedMessage === 'MeterValues') {
+          ws.send(rejectRespond)
+          return
+        }
+
+        ws.send(acceptRespond)
+        metaData.connectorId = connId
+        metaData.transactionId = connectors[connId].transactionId
+        metaData.currentMeterValue = connectors[connId].currentMeterValue
+        metaData.status = connectors[connId].status
+        metaData.bootNotification = settingsState.bootNotification
+        const triggerMessage =  sendCommand(requestedMessage, metaData)
+        centralSystemSend(triggerMessage.ocppCommand, triggerMessage.lastCommand)
+        break;
+      case 'UnlockConnector':
+        const getSetting = settingsState.stationSettings.findIndex(x => x.key === 'UnlockConnectorOnEVSideDisconnect')
+        if (getSetting === -1 || settingsState.stationSettings[getSetting].value === false) {
+          ws.send(JSON.stringify([ 3, id, { status: 'NotSupported' }]))
+          return
+        }
+
+        ws.send(JSON.stringify([ 3, id, { status: connectors[connId].simulateUnlockStatus }]))
+        break;
+      case 'GetConfiguration':
+        const returnConfiguration = { configurationKey: settingsState.stationSettings, unknownKey: [] }
+        ws.send(JSON.stringify([ 3, id, returnConfiguration]))
+        break;
+      case 'ChangeConfiguration':
+        const { key, value } = payload
+        let changeValueStatus = 'Accepted'
+        const findSetting = settingsState.stationSettings.findIndex(x => x.key === key)
+        if (findSetting === -1) changeValueStatus = 'NotSupported'
+
+        const checkSetting = settingsState.stationSettings[findSetting]
+        if (checkSetting.readonly) changeValueStatus = 'Rejected'
+        if ((checkSetting.value === 'true' || checkSetting.value === 'false') && value !== 'true' && value !== 'false') changeValueStatus = 'Rejected'
+        if (!isNaN(checkSetting.value) && isNaN(value)) changeValueStatus = 'Rejected'
+        
+        ws.send(JSON.stringify([ 3, id, { status: changeValueStatus }]))
+
+        const element = { ...checkSetting, value }
+        settingsState.stationSettings[findSetting] = element
+        setSettingsState( { ...settingsState } )
         break;
       default:
         break;

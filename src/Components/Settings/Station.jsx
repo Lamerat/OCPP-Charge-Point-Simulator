@@ -9,7 +9,6 @@ const SingleField = ({data}) => {
   const { settingsState, setSettingsState } = useContext(SettingsContext)
 
   const changeValue = (field, value) => {
-    console.log(field, value)
     const index = settingsState.stationSettings.findIndex(x => x.key === data.key)
     const element = { ...data, [field]: value }
     settingsState.stationSettings[index] = element

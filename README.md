@@ -16,3 +16,11 @@
 #### Operations Initiated by Central System
 * Remote Start Transaction
 * Remote Stop Transaction
+* Unlock connector
+* GetConfiguration
+* ChangeConfiguration
+* TriggerMessage
+  * BootNotification
+  * Heartbeat
+  * MeterValues
+  * StatusNotification
