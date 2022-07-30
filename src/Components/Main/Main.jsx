@@ -235,6 +235,9 @@ const Main = () => {
         settingsState.stationSettings[findSetting] = element
         setSettingsState( { ...settingsState } )
         break;
+      case 'GetDiagnostics':
+        
+        break;
       default:
         break;
     }

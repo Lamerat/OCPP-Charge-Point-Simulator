@@ -25,6 +25,15 @@ const defaultSettings = {
   },
 
   stationSettings: stationSettings.configurationKey,
+
+  simulation: {
+    diagnosticFileName: 'diagnostics.csv',
+    diagnosticUploadTime: 30, // in seconds
+    diagnosticStatus: 'Uploaded',
+    firmWareStatus: 'Downloaded',
+    connectorOneUnlock: 'Unlocked',
+    connectorTwoUnlock: 'Unlocked',
+  }
 }
 
 export default defaultSettings
