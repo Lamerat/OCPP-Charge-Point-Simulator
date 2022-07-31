@@ -16,6 +16,9 @@ let meterValueInterval = {
   2: null,
 }
 
+let uploadInterval
+let uploadSeconds
+
 const getTime = () => moment().format('HH:mm:ss')
 const logArray = []
 
@@ -29,6 +32,8 @@ const Main = () => {
   const [ conOne, setConOne ] = useState(connectors[1])
   const [ conTwo, setConTwo ] = useState(connectors[2])
 
+  const [ uploading, setUploading ] = useState(false)
+  const [ seconds, setSeconds ] = useState(settingsState.simulation.diagnosticUploadTime)
   const [ initialBootNotification, setInitialBootNotification ] = useState(false)
   const [ helpAnchorEl, setHelpAnchorEl ] = useState(null)
   const [ helpText, setHelpText ] = useState('')
@@ -43,7 +48,6 @@ const Main = () => {
   const logsEndRef = useRef(null)
   const scrollToBottom = () => logsEndRef.current?.scrollIntoView({ behavior: "smooth" })
   useEffect(() => scrollToBottom(), [logs])
-
 
   const showHelpText = (event, type) => {
     const getData = (settingsState.stationSettings.filter(x => x.key === type))[0]
@@ -61,6 +65,18 @@ const Main = () => {
   const clearLog = () => {
     logArray.length = 0
     setLogs([])
+  }
+
+
+  const uploadSimulate = () => {
+    if (uploadSeconds === 0) {
+      clearInterval(uploadInterval)
+      setUploading(false)
+      return
+    }
+    uploadSeconds = uploadSeconds - 1
+    setSeconds(uploadSeconds)
+
   }
 
 
@@ -236,7 +252,13 @@ const Main = () => {
         setSettingsState( { ...settingsState } )
         break;
       case 'GetDiagnostics':
-        
+        ws.send(JSON.stringify([ 3, id, { fileName: settingsState.simulation.diagnosticFileName }]))
+        if (!uploading) {
+          setUploading(true)
+          uploadSeconds = settingsState.simulation.diagnosticUploadTime
+          setSeconds(uploadSeconds)
+          uploadInterval = setInterval(() => uploadSimulate(), 1000)
+        }
         break;
       default:
         break;
@@ -266,6 +288,8 @@ const Main = () => {
       clearInterval(meterValueInterval[2])
       setInitialBootNotification(false)
       setStatus(status)
+      setUploading(false)      
+      clearInterval(uploadInterval)
       setWs('')
     }
 
@@ -289,6 +313,18 @@ const Main = () => {
       <Grid container spacing={3}>
         <Grid item xs={3.2}>
           <ChargePoint ws={ws} setWs={setWs} status={status} setStatus={setStatus} centralSystemSend={centralSystemSend} />
+          {
+            uploading
+              ? <Paper sx={{mt: 3, p: 2, height: '42.5px'}}>
+                  <Box display='flex' alignItems='center'>
+                    <img src='./sand.png' alt='upload animation' height={36} />
+                    <Typography variant='body2' ml={1} color='primary' >SIMULATE UPLOAD DIAGNOSTICS FILE</Typography>
+                    <Typography variant='h5' ml={0.5} color='primary' >{seconds > 9 ? seconds : `0${seconds}`}</Typography>
+                    <Typography variant='bod1' ml={0.5} color='primary' >sec.</Typography>
+                  </Box>
+                </Paper>
+              : null
+          }
         </Grid>
         <Grid item xs={4.4}>
         { connectedStatuses.includes(status.status)

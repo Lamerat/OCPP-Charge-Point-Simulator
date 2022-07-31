@@ -83,7 +83,7 @@ export const simulateInfo = {
   },
 
   connectorOneUnlock: {
-    description: `What status return connector after recieve dsadsaasdasd.`,
+    description: `What status return connector after Central System request unlock connector.`,
     valueDescription: {
       Unlocked: 'Connector has successfully been unlocked.',
       UnlockFailed: 'Failed to unlock the connector',
@@ -91,7 +91,7 @@ export const simulateInfo = {
   },
 
   connectorTwoUnlock: {
-    description: `What status return connector after Central System request unlock connector`,
+    description: `What status return connector after Central System request unlock connector.`,
     valueDescription: {
       Unlocked: 'Connector has successfully been unlocked.',
       UnlockFailed: 'Failed to unlock the connector',
