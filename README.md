@@ -24,3 +24,6 @@
   * Heartbeat
   * MeterValues
   * StatusNotification
+  * DiagnosticsStatusNotification
+  * FirmwareStatusNotification
+* GetDiagnostics

@@ -10,6 +10,8 @@ const metaDataType = {
   meterStart: null,
   meterStop: null,
   currentMeterValue: null,
+  diagnosticStatus: null,
+  firmWareStatus: null,
 }
 
 
@@ -82,6 +84,12 @@ export const sendCommand = (command, metaData) => {
           }
         ]
       }
+      break;
+    case 'DiagnosticsStatusNotification':
+      message = { status: metaData.diagnosticStatus }
+      break;
+    case 'FirmwareStatusNotification':
+      message = { status: metaData.firmWareStatus }
       break;
     default:
       message = {}

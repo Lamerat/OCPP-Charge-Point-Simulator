@@ -4,6 +4,7 @@ import { Chip, Stack, Typography, Paper, Box, Divider, Button } from '@mui/mater
 import { pointStatus, connectedStatuses } from '../../Config/charge-point-settings';
 import { sendCommand } from '../../OCPP/OCPP-Commands';
 import PropTypes from 'prop-types';
+import { socketInfo } from '../../common/constants';
 
 
 const ChargePoint = ({ ws, setWs, status, setStatus, centralSystemSend }) => {
@@ -11,7 +12,9 @@ const ChargePoint = ({ ws, setWs, status, setStatus, centralSystemSend }) => {
 
   const startConnection = () => {
     const { protocol, address, port, chargePointId, OCPPversion } = settingsState.mainSettings
-    setWs(new WebSocket(`${protocol}://${address}:${port}/${chargePointId}`, [ OCPPversion ]))
+    // setWs(new WebSocket(`${protocol}://${address}:${port}/${chargePointId}`, [ OCPPversion ]))
+    socketInfo.webSocket = new WebSocket(`${protocol}://${address}:${port}/${chargePointId}`, [ OCPPversion ])
+    setWs(socketInfo.webSocket)
     setStatus(pointStatus.connecting)
   }
 

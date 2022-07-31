@@ -6,7 +6,7 @@ import Connector from "../Connector/Connector";
 import SettingsContext from '../../Context/SettingsContext';
 import { pointStatus, connectedStatuses } from '../../Config/charge-point-settings';
 import { MonitorHeartOutlined, Speed, Clear } from "@mui/icons-material";
-import { logTypes, commands, connectors, connectorStatus } from "../../common/constants";
+import { logTypes, commands, connectors, connectorStatus, socketInfo } from "../../common/constants";
 import { sendCommand } from "../../OCPP/OCPP-Commands";
 
 
@@ -26,9 +26,9 @@ const logArray = []
 const Main = () => {
   const { settingsState, setSettingsState } = useContext(SettingsContext)
   
-  const [ ws, setWs ] = useState('')
+  const [ ws, setWs ] = useState(socketInfo.webSocket || '')
   const [ logs, setLogs ] = useState(logArray)
-  const [ status, setStatus ] = useState(pointStatus.disconnected)
+  const [ status, setStatus ] = useState(socketInfo.lastStatus || pointStatus.disconnected)
   const [ conOne, setConOne ] = useState(connectors[1])
   const [ conTwo, setConTwo ] = useState(connectors[2])
 
@@ -70,13 +70,14 @@ const Main = () => {
 
   const uploadSimulate = () => {
     if (uploadSeconds === 0) {
+      const result = sendCommand('DiagnosticsStatusNotification', { diagnosticStatus: settingsState.simulation.diagnosticStatus })
+      centralSystemSend(result.ocppCommand, result.lastCommand)
       clearInterval(uploadInterval)
       setUploading(false)
       return
     }
     uploadSeconds = uploadSeconds - 1
     setSeconds(uploadSeconds)
-
   }
 
 
@@ -123,6 +124,7 @@ const Main = () => {
 
     if (command === 'Authorize' && message.idTagInfo.status === 'Accepted') {
       setStatus(pointStatus.authorized)
+      socketInfo.lastStatus = pointStatus.authorized
     }
 
     if (command === 'StartTransaction' && message.idTagInfo.status === 'Accepted') {
@@ -218,6 +220,8 @@ const Main = () => {
         metaData.currentMeterValue = connectors[connId].currentMeterValue
         metaData.status = connectors[connId].status
         metaData.bootNotification = settingsState.bootNotification
+        metaData.diagnosticStatus = uploading ? 'Uploading' : 'Idle'
+        metaData.firmWareStatus = settingsState.simulation.firmWareStatus
         const triggerMessage =  sendCommand(requestedMessage, metaData)
         centralSystemSend(triggerMessage.ocppCommand, triggerMessage.lastCommand)
         break;
@@ -228,7 +232,7 @@ const Main = () => {
           return
         }
 
-        ws.send(JSON.stringify([ 3, id, { status: connectors[connId].simulateUnlockStatus }]))
+        ws.send(JSON.stringify([ 3, id, { status: connId === 1 ? settingsState.simulation.connectorOneUnlock : settingsState.simulation.connectorTwoUnlock }]))
         break;
       case 'GetConfiguration':
         const returnConfiguration = { configurationKey: settingsState.stationSettings, unknownKey: [] }
@@ -254,10 +258,13 @@ const Main = () => {
       case 'GetDiagnostics':
         ws.send(JSON.stringify([ 3, id, { fileName: settingsState.simulation.diagnosticFileName }]))
         if (!uploading) {
+          clearInterval(uploadInterval)
           setUploading(true)
           uploadSeconds = settingsState.simulation.diagnosticUploadTime
           setSeconds(uploadSeconds)
           uploadInterval = setInterval(() => uploadSimulate(), 1000)
+          const result = sendCommand('DiagnosticsStatusNotification', { diagnosticStatus: 'Uploading' })
+          centralSystemSend(result.ocppCommand, result.lastCommand)
         }
         break;
       default:
@@ -269,6 +276,7 @@ const Main = () => {
   if (ws) {
     ws.onopen = () => {
       setStatus(pointStatus.connected)
+      socketInfo.lastStatus = pointStatus.connected
       updateLog({ time: getTime(), type: logTypes.socket, message: 'Charge point connected' })
 
       const initialBoot = sendCommand('BootNotification', { bootNotification: settingsState.bootNotification })
@@ -357,7 +365,7 @@ const Main = () => {
                 <Stack key={index} direction="row" color={el.type.color} spacing={2} divider={<Divider orientation="vertical" flexItem />}>
                   <Box>{el.time}</Box> 
                   <Box width={55} minWidth={55}>{el.type.text}</Box>
-                  <Box width={140} minWidth={140}>{el.command}</Box>
+                  <Box width={175} minWidth={175}>{el.command}</Box>
                   <Box>{el.message}</Box>
                 </Stack>)
               )

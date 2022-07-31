@@ -83,3 +83,8 @@ export const connectors = {
   1: connectorOne,
   2: connectorTwo,
 }
+
+export const socketInfo = {
+  webSocket: null,
+  lastStatus: null,
+}
