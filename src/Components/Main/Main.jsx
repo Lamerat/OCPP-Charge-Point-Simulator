@@ -148,6 +148,9 @@ const Main = () => {
         const result = sendCommand('MeterValues', metaData)
         centralSystemSend(result.ocppCommand, result.lastCommand)
       }, settingsState.stationSettings[index].value * 1000)
+
+      const statusData = sendCommand('StatusNotification', { connectorId: connector, status: connectors[connector].status })
+      centralSystemSend(statusData.ocppCommand, statusData.lastCommand)
     }
 
     if (command === 'StopTransaction' && message.idTagInfo.status === 'Accepted') {
