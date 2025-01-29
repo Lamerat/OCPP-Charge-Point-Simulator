@@ -61,7 +61,7 @@ const connectorOne = {
   status: connectorStatus.Available,
   stopReason: stopReason.Remote,
   inTransaction: false,
-  idTag: JSON.parse(localStorage.getItem('OCPPSettings')).mainSettings?.RFIDTag || nanoid(20),
+  idTag: JSON.parse(localStorage.getItem('OCPPSettings'))?.mainSettings?.RFIDTag || nanoid(20),
   transactionId: 0,
   simulateUnlockStatus: 'Unlocked',
 }
@@ -73,7 +73,7 @@ const connectorTwo = {
   status: connectorStatus.Available,
   stopReason: stopReason.Remote,
   inTransaction: false,
-  idTag: JSON.parse(localStorage.getItem('OCPPSettings')).mainSettings?.RFIDTag || nanoid(20),
+  idTag: JSON.parse(localStorage.getItem('OCPPSettings'))?.mainSettings?.RFIDTag || nanoid(20),
   transactionId: 0,
   simulateUnlockStatus: 'UnlockFailed',
 }
