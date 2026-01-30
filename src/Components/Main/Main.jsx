@@ -143,6 +143,7 @@ const Main = () => {
           connectorId: connectors[connector].connectorId,
           transactionId: connectors[connector].transactionId,
           currentMeterValue: connectors[connector].currentMeterValue,
+          stateOfCharge: connectors[connector].stateOfCharge,
         }
 
         const result = sendCommand('MeterValues', metaData)
@@ -153,13 +154,27 @@ const Main = () => {
       centralSystemSend(statusData.ocppCommand, statusData.lastCommand)
     }
 
+    if (command === 'StartTransaction' && message.idTagInfo.status !== 'Accepted') {
+      connectors[connector].status = connectorStatus.Available
+      updateConnector[connector]({ ...connectors[connector] })
+
+      const statusData = sendCommand('StatusNotification', {
+        connectorId: connector,
+        status: connectors[connector].status
+      })
+      centralSystemSend(statusData.ocppCommand, statusData.lastCommand)
+    }
+
+
     if (command === 'StopTransaction' && message.idTagInfo.status === 'Accepted') {
-      connectors[connector].startMeterValue = connectors[connector].currentMeterValue
+      connectors[connector].startMeterValue = 0
+      connectors[connector].currentMeterValue = 0
       connectors[connector].transactionId = 0
       connectors[connector].inTransaction = false
       connectors[connector].status = connectorStatus.Finishing
       updateConnector[connector]({ ...connectors[connector] })
       clearInterval(meterValueInterval[connector])
+      meterValueInterval[connector] = null
       const statusData = sendCommand('StatusNotification', { connectorId: connector, status: connectors[connector].status })
       centralSystemSend(statusData.ocppCommand, statusData.lastCommand)
     }
@@ -181,6 +196,16 @@ const Main = () => {
           return
         }
 
+        const alwaysReject = settingsState.stationSettings.find(
+          x => x.key === 'AlwaysReject'
+        )?.value === 'true'
+
+        if (alwaysReject) {
+          ws.send(rejectRespond)
+          return
+        }
+
+
         ws.send(acceptRespond)
         connectors[connId].idTag = payload.idTag
         updateConnector[connId]({ ...connectors[connId] })
@@ -201,7 +226,8 @@ const Main = () => {
           ws.send(rejectRespond)
           return
         }
-
+        clearInterval(meterValueInterval[connId])
+        meterValueInterval[connId] = null
         ws.send(acceptRespond)
         metaData.connectorId = connId
         metaData.currentMeterValue = connectors[connId].currentMeterValue

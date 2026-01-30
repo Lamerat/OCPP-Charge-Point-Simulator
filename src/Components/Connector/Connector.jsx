@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { FormGroup, Typography, Paper, Box, Divider, Grid, Chip, Button, Tooltip, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material'
-import { connectorData, connectorStatus, stopReason, connectors} from '../../common/constants';
+import { connectorData, connectorStatus, stopReason, connectors } from '../../common/constants';
 import { sendCommand } from '../../OCPP/OCPP-Commands';
 import { mainStatus } from '../../Config/charge-point-settings';
 import { styled } from '@mui/material/styles';
@@ -28,17 +28,27 @@ const StyledButton = styled(Button)({
   '& .MuiButton-startIcon': { margin: 0 }
 });
 
-
 const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => {
-  const [ meterError, setMeterError ] = useState(false)
-  const [ localStatus, setLocalStatus ] = useState(connectorStatus.Available)
+  const [meterError, setMeterError] = useState(false)
+  const [socError, setSocError] = useState(false)
+  const [localStatus, setLocalStatus] = useState(connectorStatus.Available)
 
   const updateData = (field, data) => {
     if (field === 'currentMeterValue') {
       data = Number(data)
-      if(isNaN(data) || !Number.isInteger(data)) return
+      if (isNaN(data) || !Number.isInteger(data)) return
       const startValue = settings.startMeterValue
       startValue > data ? setMeterError(true) : setMeterError(false)
+    }
+
+    if (field === 'stateOfCharge') {
+      data = Number(data)
+      if (isNaN(data) || !Number.isInteger(data) || data < 0 || data > 100) {
+        setSocError(true)
+        return
+      } else {
+        setSocError(false)
+      }
     }
 
     connectors[id] = { ...connectors[id], [field]: data }
@@ -69,6 +79,7 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
         metaData.connectorId = connectors[id].connectorId
         metaData.transactionId = connectors[id].transactionId
         metaData.currentMeterValue = connectors[id].currentMeterValue
+        metaData.stateOfCharge = connectors[id].stateOfCharge
         break;
       default:
         break;
@@ -78,107 +89,145 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
   }
 
   return (
-    <Paper sx={{p: 2}}>
-    <Box display='flex' alignItems='center' justifyContent='space-between'>
-      <Typography variant='h6' color='primary'>CONNECTOR - {id}</Typography>
-      { settings.inTransaction
-        ? <Tooltip placement='top' title='In Transaction' arrow><img src={animate} style={{height: 10}} alt='charge animation' /></Tooltip>
-        : null
-      }
-      <Chip
+    <Paper sx={{ p: 2 }}>
+      <Box display='flex' alignItems='center' justifyContent='space-between'>
+        <Typography variant='h6' color='primary'>CONNECTOR - {id}</Typography>
+        {settings.inTransaction && (
+          <Tooltip placement='top' title='In Transaction' arrow>
+            <img src={animate} style={{ height: 10 }} alt='charge animation' />
+          </Tooltip>
+        )}
+        <Chip
           size='small'
           label={connectorData[settings.status].text.toUpperCase()}
-          sx={{ backgroundColor: connectorData[settings.status].backgroundColor, color: connectorData[settings.status].color}}
+          sx={{ backgroundColor: connectorData[settings.status].backgroundColor, color: connectorData[settings.status].color }}
         />
-    </Box>
-    <Divider sx={{ mt: 0.5, mb: 1.5 }} />
-    <Grid container spacing={3}>
-      <Grid item xs={6}>
-        <TextField
-          fullWidth
-          disabled
-          value={settings.idTag}
-          label='ID Tag'
-          size='small'
-        />
-      </Grid>
-      <Grid item xs={6}>
-        <Button
-          fullWidth
-          variant='contained'
-          disabled={settings.inTransaction || status.status !== mainStatus.authorized}
-          onClick={() => sendRequest('StartTransaction')}
-        >
-          Start transaction
-        </Button>
-      </Grid>
-      <Grid item xs={6}>
-        <FormControl fullWidth>
-          <InputLabel>Stop Reason</InputLabel>
-          <Select
+      </Box>
+      <Divider sx={{ mt: 0.5, mb: 1.5 }} />
+
+      <Grid container spacing={3}>
+        {/* ID Tag */}
+        <Grid item xs={6}>
+          <TextField fullWidth disabled value={settings.idTag} label='ID Tag' size='small' />
+        </Grid>
+
+        {/* Start Transaction */}
+        <Grid item xs={6}>
+          <Button
             fullWidth
-            value={settings.stopReason}
-            label='Stop Reason'
-            size='small'
-            disabled={!settings.inTransaction}
-            name='stopReason'
-            onChange={(e) => updateData(e.target.name, e.target.value)}
-          >
-            { Object.keys(stopReason).map(x => <MenuItem key={x} value={stopReason[x]}>{stopReason[x]}</MenuItem>) }
-          </Select>
-        </FormControl>
-      </Grid>
-      <Grid item xs={6}>
-        <Button fullWidth variant='contained' disabled={!settings.inTransaction} onClick={() => sendRequest('StopTransaction')} > stop transaction </Button>
-      </Grid>
-      <Grid item xs={6}>
-        <FormControl fullWidth>
-          <InputLabel>Status</InputLabel>
-          <Select
-            fullWidth
-            value={localStatus}
-            label='Status'
-            size='small'
-            name='status'
-            onChange={(e) => setLocalStatus(e.target.value)}
-          >
-            { Object.keys(connectorStatus).map(x => <MenuItem key={x} value={connectorStatus[x]}>{connectorData[x].text}</MenuItem>) }
-          </Select>
-        </FormControl>
-      </Grid>
-      <Grid item xs={6}>
-        <Button fullWidth variant='contained' onClick={() => sendRequest('StatusNotification')}>status notification</Button>
-      </Grid>
-      <Grid item xs={6}>
-        <TextField label='Start Meter Value' size='small' variant='outlined' fullWidth value={settings.startMeterValue} disabled />
-      </Grid>
-      <Grid item xs={6}>
-        <FormGroup row>
-          <StyledTextField
-            disabled={!settings.inTransaction}
-            label='Current Meter Value'
-            size='small'
-            error={meterError}
-            variant='outlined'
-            sx={{ width: 'calc(100% - 40px)'}}
-            value={settings.currentMeterValue}
-            name='currentMeterValue'
-            onChange={(e) => updateData(e.target.name, e.target.value)}
-            onFocus={event => {event.target.select()}}
-          />
-          <StyledButton
-            disabled={!settings.inTransaction}
             variant='contained'
-            startIcon={<AddIcon />}
-            onClick={() => updateData('currentMeterValue', settings.currentMeterValue + 10)}
-          />
-        </FormGroup>
+            disabled={settings.inTransaction || status.status !== mainStatus.authorized}
+            onClick={() => sendRequest('StartTransaction')}
+          >
+            Start transaction
+          </Button>
+        </Grid>
+
+        {/* Stop Reason */}
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <InputLabel>Stop Reason</InputLabel>
+            <Select
+              fullWidth
+              value={settings.stopReason}
+              label='Stop Reason'
+              size='small'
+              disabled={!settings.inTransaction}
+              name='stopReason'
+              onChange={(e) => updateData(e.target.name, e.target.value)}
+            >
+              {Object.keys(stopReason).map(x => <MenuItem key={x} value={stopReason[x]}>{stopReason[x]}</MenuItem>)}
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {/* Stop Transaction */}
+        <Grid item xs={6}>
+          <Button fullWidth variant='contained' disabled={!settings.inTransaction} onClick={() => sendRequest('StopTransaction')}>
+            Stop transaction
+          </Button>
+        </Grid>
+
+        {/* Status Notification */}
+        <Grid item xs={6}>
+          <FormControl fullWidth>
+            <InputLabel>Status</InputLabel>
+            <Select
+              fullWidth
+              value={localStatus}
+              label='Status'
+              size='small'
+              name='status'
+              onChange={(e) => setLocalStatus(e.target.value)}
+            >
+              {Object.keys(connectorStatus).map(x => <MenuItem key={x} value={connectorStatus[x]}>{connectorData[x].text}</MenuItem>)}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={6}>
+          <Button fullWidth variant='contained' onClick={() => sendRequest('StatusNotification')}>
+            Status notification
+          </Button>
+        </Grid>
+
+        {/* Meter Values */}
+        <Grid item xs={6}>
+          <TextField label='Start Meter Value' size='small' variant='outlined' fullWidth value={settings.startMeterValue} disabled />
+        </Grid>
+        <Grid item xs={6}>
+          <FormGroup row>
+            <StyledTextField
+              disabled={!settings.inTransaction}
+              label='Current Meter Value'
+              size='small'
+              error={meterError}
+              variant='outlined'
+              sx={{ width: 'calc(100% - 40px)' }}
+              value={settings.currentMeterValue}
+              name='currentMeterValue'
+              onChange={(e) => updateData(e.target.name, e.target.value)}
+              onFocus={event => { event.target.select() }}
+            />
+            <StyledButton
+              disabled={!settings.inTransaction}
+              variant='contained'
+              startIcon={<AddIcon />}
+              onClick={() => updateData('currentMeterValue', settings.currentMeterValue + 10)}
+            />
+          </FormGroup>
+        </Grid>
+
+        {/* NEW: State of Charge */}
+        <Grid item xs={6}>
+          <FormGroup row>
+            <StyledTextField
+              disabled={!settings.inTransaction}
+              label='State of Charge (%)'
+              size='small'
+              error={socError}
+              variant='outlined'
+              sx={{ width: 'calc(100% - 40px)' }}
+              value={settings.stateOfCharge ?? 0}
+              name='stateOfCharge'
+              onChange={(e) => updateData(e.target.name, e.target.value)}
+              onFocus={event => { event.target.select() }}
+            />
+            <StyledButton
+              disabled={!settings.inTransaction}
+              variant='contained'
+              startIcon={<AddIcon />}
+              onClick={() => updateData('stateOfCharge', Math.min((settings.stateOfCharge ?? 0) + 5, 100))}
+            />
+          </FormGroup>
+        </Grid>
+        {/* Send Meter Value */}
+        <Grid item xs={12}>
+          <Button disabled={!settings.inTransaction} fullWidth variant='contained' onClick={() => sendRequest('MeterValues')}>
+            Send Meter Value
+          </Button>
+        </Grid>
       </Grid>
-      <Grid item xs={12}>
-      <Button disabled={!settings.inTransaction} fullWidth variant='contained' onClick={() => sendRequest('MeterValues')} >Send Meter Value</Button>
-      </Grid>
-    </Grid>
-  </Paper>
+    </Paper>
   )
 }
 

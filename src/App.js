@@ -9,8 +9,26 @@ import defaultSettings from './Config/default-settings';
 
 
 function App() {
-  const [ settingsState, setSettingsState ] = useState((JSON.parse(localStorage.getItem('OCPPSettings'))) || defaultSettings);  
+  const mergeStationSettings = (defaults, stored) => {
+    const storedMap = new Map(stored.map(s => [s.key, s]));
+    return defaults.map(d => storedMap.get(d.key) || d);
+  };
+  const stored = JSON.parse(localStorage.getItem('OCPPSettings')) || null;
 
+  const initialSettings = stored
+    ? {
+        ...stored, // keep mainSettings and other old data
+        stationSettings: mergeStationSettings(
+          defaultSettings.stationSettings,
+          stored.stationSettings
+        )
+      }
+    : defaultSettings;
+
+  const [settingsState, setSettingsState] = useState(initialSettings);
+
+
+  
   return (
       <SettingsContext.Provider value={{ settingsState, setSettingsState }}>
         <BrowserRouter>

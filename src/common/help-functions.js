@@ -10,4 +10,4 @@ export const saveSettings = (settings) => {
   connectors[2].idTag = settings?.mainSettings.RFIDTag
 }
 
-export const OCPPDate = (date) => moment(date).format('YYYY-MM-DDTHH:mm:ss').toString() + 'Z'
+export const OCPPDate = (date) => moment.utc(moment(date)).format()
