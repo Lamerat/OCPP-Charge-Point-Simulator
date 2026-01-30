@@ -154,6 +154,18 @@ const Main = () => {
       centralSystemSend(statusData.ocppCommand, statusData.lastCommand)
     }
 
+    if (command === 'StartTransaction' && message.idTagInfo.status !== 'Accepted') {
+      connectors[connector].status = connectorStatus.Available
+      updateConnector[connector]({ ...connectors[connector] })
+
+      const statusData = sendCommand('StatusNotification', {
+        connectorId: connector,
+        status: connectors[connector].status
+      })
+      centralSystemSend(statusData.ocppCommand, statusData.lastCommand)
+    }
+
+
     if (command === 'StopTransaction' && message.idTagInfo.status === 'Accepted') {
       connectors[connector].startMeterValue = 0
       connectors[connector].currentMeterValue = 0
@@ -183,6 +195,16 @@ const Main = () => {
           ws.send(rejectRespond)
           return
         }
+
+        const alwaysReject = settingsState.stationSettings.find(
+          x => x.key === 'AlwaysReject'
+        )?.value === 'true'
+
+        if (alwaysReject) {
+          ws.send(rejectRespond)
+          return
+        }
+
 
         ws.send(acceptRespond)
         connectors[connId].idTag = payload.idTag

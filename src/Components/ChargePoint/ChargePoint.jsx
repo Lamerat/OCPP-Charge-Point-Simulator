@@ -5,11 +5,29 @@ import { pointStatus, connectedStatuses } from '../../Config/charge-point-settin
 import { sendCommand } from '../../OCPP/OCPP-Commands';
 import PropTypes from 'prop-types';
 import { socketInfo } from '../../common/constants';
+import { Switch, FormControlLabel } from '@mui/material'
 
 
 const ChargePoint = ({ ws, setWs, status, setStatus, centralSystemSend }) => {
-  const { settingsState } = useContext(SettingsContext)
+  const { settingsState, setSettingsState } = useContext(SettingsContext)
+  const alwaysRejectSetting = settingsState.stationSettings.find(
+    x => x.key === 'AlwaysReject'
+  )
 
+  const alwaysReject = alwaysRejectSetting?.value === 'true'
+
+  const toggleAlwaysReject = () => {
+  const updatedSettings = settingsState.stationSettings.map(s =>
+    s.key === 'AlwaysReject'
+      ? { ...s, value: s.value === 'true' ? 'false' : 'true' }
+      : s
+  )
+
+  setSettingsState({
+    ...settingsState,
+    stationSettings: updatedSettings
+  })
+}
   const startConnection = () => {
     const { protocol, address, port, chargePointId, OCPPversion } = settingsState.mainSettings
     // setWs(new WebSocket(`${protocol}://${address}:${port}/${chargePointId}`, [ OCPPversion ]))
@@ -55,10 +73,16 @@ const ChargePoint = ({ ws, setWs, status, setStatus, centralSystemSend }) => {
         <Button disabled={!connectedStatuses.includes(status.status)} variant='contained' fullWidth onClick={() => sendRequest('Authorize')}>Authorize</Button>
         <Button disabled={!connectedStatuses.includes(status.status)} variant='contained' fullWidth onClick={() => sendRequest('BootNotification')}>Boot notification</Button>
         <Button disabled={!connectedStatuses.includes(status.status)} variant='contained' fullWidth onClick={() => sendRequest('Heartbeat')}>Heartbeat</Button>
+        <FormControlLabel
+          control={<Switch checked={alwaysReject} onChange={toggleAlwaysReject} />}
+          label="Always Reject"
+        />
       </Stack>
     </Paper>
   )
 }
+
+
 
 
 ChargePoint.propTypes = {
