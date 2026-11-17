@@ -54,7 +54,7 @@ const Settings = () => {
         setSettingsState(nextSettings)
         saveSettings(nextSettings)
         setImportError('')
-      } catch (error) {
+      } catch {
         setImportError('The selected file is not a valid simulator settings JSON file.')
       } finally {
         event.target.value = ''

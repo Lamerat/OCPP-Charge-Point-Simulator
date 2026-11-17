@@ -23,7 +23,7 @@ const Simulation = () => {
   return (
     <Box>
       <Grid container spacing={5}>
-        <Grid item xs={3}>
+        <Grid size={{ xs: 3 }}>
           <Stack spacing={3}>
             <TextField
               fullWidth
@@ -42,8 +42,7 @@ const Simulation = () => {
               size='small'
               name='diagnosticUploadTime'
               value={settingsState.simulation.diagnosticUploadTime}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ min: 0 }}
+              slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0 } }}
               onChange={(e) => changeValue(e.target.name, e.target.value)}
               onClick={(e) => setHelpText({ ...simulateInfo[e.target.name], value: e.target.name})}
             />
@@ -67,7 +66,7 @@ const Simulation = () => {
             </FormControl>
           </Stack>
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={{ xs: 3 }}>
           <Stack spacing={3}>
             <FormControl fullWidth>
               <InputLabel>Firmware Status Notification final</InputLabel>
@@ -128,7 +127,7 @@ const Simulation = () => {
             }
           </Stack>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           {
             helpText === null
             ? null

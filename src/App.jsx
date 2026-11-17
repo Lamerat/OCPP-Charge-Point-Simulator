@@ -51,11 +51,11 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <SettingsContext.Provider value={{ settingsState, setSettingsState }}>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <MenuBar />
           <Routes>
-            <Route exact path='/' element={<Main />}/>
-            <Route exact path='/settings' element={<Settings />}/>
+            <Route path='/' element={<Main />}/>
+            <Route path='/settings' element={<Settings />}/>
           </Routes>
         </BrowserRouter>
       </SettingsContext.Provider>

@@ -13,7 +13,7 @@ const MainSettings = () => {
   return (
     <Box>
       <Grid container spacing={3}>
-        <Grid item xs={1}>
+        <Grid size={{ xs: 1 }}>
           <FormControl fullWidth>
             <InputLabel>Protocol</InputLabel>
             <Select
@@ -28,7 +28,7 @@ const MainSettings = () => {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           <TextField
             fullWidth
             label='Address'
@@ -39,7 +39,7 @@ const MainSettings = () => {
             onChange={(e) => changeValue(e.target.name, e.target.value)}
           />
         </Grid>
-        <Grid item xs={2}>
+        <Grid size={{ xs: 2 }}>
         <TextField
             fullWidth
             label='Port'
@@ -48,12 +48,12 @@ const MainSettings = () => {
             name='port'
             value={settingsState.mainSettings.port}
             type='number'
-            inputProps={{ min: 1, max: 65535 }}
+            slotProps={{ htmlInput: { min: 1, max: 65535 } }}
             helperText='Optional'
             onChange={(e) => changeValue(e.target.name, e.target.value)}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={{ xs: 3 }}>
           <TextField
             fullWidth
             label='Charge Point ID'
@@ -64,7 +64,7 @@ const MainSettings = () => {
             onChange={(e) => changeValue(e.target.name, e.target.value)}
           />
         </Grid>
-        <Grid item xs={2.5}>
+        <Grid size={{ xs: 2.5 }}>
         <FormControl fullWidth>
             <InputLabel>OCPP Version</InputLabel>
             <Select
@@ -79,8 +79,8 @@ const MainSettings = () => {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={9.5}></Grid>
-        <Grid item xs={2.5}>
+        <Grid size={{ xs: 9.5 }}></Grid>
+        <Grid size={{ xs: 2.5 }}>
           <TextField
             fullWidth
             label='RFID Tag'
@@ -91,8 +91,8 @@ const MainSettings = () => {
             onChange={(e) => changeValue(e.target.name, e.target.value)}
           />
         </Grid>
-        <Grid item xs={9.5}></Grid>
-        <Grid item xs={2.5}>
+        <Grid size={{ xs: 9.5 }}></Grid>
+        <Grid size={{ xs: 2.5 }}>
           <FormControl fullWidth>
             <InputLabel>Number of connectors</InputLabel>
             <Select
@@ -107,8 +107,8 @@ const MainSettings = () => {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={9.5}></Grid>
-        <Grid item xs={2}>
+        <Grid size={{ xs: 9.5 }}></Grid>
+        <Grid size={{ xs: 2 }}>
           <Button startIcon={<SaveIcon />} variant='contained' onClick={() => saveSettings(settingsState)}>Save</Button>
         </Grid>
       </Grid>

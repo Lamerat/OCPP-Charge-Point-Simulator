@@ -123,7 +123,7 @@ const Main = () => {
     if (typeof message !== 'string') return JSON.stringify(message, null, 2)
     try {
       return JSON.stringify(JSON.parse(message), null, 2)
-    } catch (error) {
+    } catch {
       return message
     }
   }
@@ -354,6 +354,8 @@ const Main = () => {
 
 
     if (command === 'StopTransaction' && message.idTagInfo.status === 'Accepted') {
+      const finalStatus = pendingStopStatus.current[connector] ?? connectorStatus.Finishing
+      delete pendingStopStatus.current[connector]
       connectors[connector].startMeterValue = 0
       connectors[connector].currentMeterValue = 0
       connectors[connector].transactionId = 0
@@ -381,7 +383,7 @@ const Main = () => {
     const metaData = {}
 
     switch (request) {
-      case 'RemoteStartTransaction':
+      case 'RemoteStartTransaction': {
         if (connectors[connId].inTransaction) {
           ws.send(rejectRespond)
           return
@@ -407,7 +409,8 @@ const Main = () => {
         const newTransaction =  sendCommand('StartTransaction', metaData)
         centralSystemSend(newTransaction.ocppCommand, newTransaction.lastCommand)
         break;
-      case 'RemoteStopTransaction':
+      }
+      case 'RemoteStopTransaction': {
           connId = null
           for (let i = 1; i <= settingsState.mainSettings.numberOfConnectors; i++) {
             if (connectors[i].transactionId === payload.transactionId) connId = i
@@ -446,7 +449,8 @@ const Main = () => {
         const endTransaction =  sendCommand('StopTransaction', metaData)
         centralSystemSend(endTransaction.ocppCommand, endTransaction.lastCommand)
         break;
-      case 'TriggerMessage':
+      }
+      case 'TriggerMessage': {
         const { requestedMessage } = payload
         if (!connectors[connId].inTransaction && requestedMessage === 'MeterValues') {
           ws.send(rejectRespond)
@@ -464,7 +468,8 @@ const Main = () => {
         const triggerMessage =  sendCommand(requestedMessage, metaData)
         centralSystemSend(triggerMessage.ocppCommand, triggerMessage.lastCommand)
         break;
-      case 'UnlockConnector':
+      }
+      case 'UnlockConnector': {
         const getSetting = settingsState.stationSettings.findIndex(x => x.key === 'UnlockConnectorOnEVSideDisconnect')
         if (getSetting === -1 || settingsState.stationSettings[getSetting].value === false) {
           ws.send(JSON.stringify([ 3, id, { status: 'NotSupported' }]))
@@ -473,11 +478,13 @@ const Main = () => {
 
         ws.send(JSON.stringify([ 3, id, { status: connId === 1 ? settingsState.simulation.connectorOneUnlock : settingsState.simulation.connectorTwoUnlock }]))
         break;
-      case 'GetConfiguration':
+      }
+      case 'GetConfiguration': {
         const returnConfiguration = { configurationKey: settingsState.stationSettings, unknownKey: [] }
         ws.send(JSON.stringify([ 3, id, returnConfiguration]))
         break;
-      case 'ChangeConfiguration':
+      }
+      case 'ChangeConfiguration': {
         const { key, value } = payload
         let changeValueStatus = 'Accepted'
         const findSetting = settingsState.stationSettings.findIndex(x => x.key === key)
@@ -494,6 +501,7 @@ const Main = () => {
         settingsState.stationSettings[findSetting] = element
         setSettingsState( { ...settingsState } )
         break;
+      }
       case 'GetDiagnostics':
         ws.send(JSON.stringify([ 3, id, { fileName: settingsState.simulation.diagnosticFileName }]))
         if (!uploading) {
@@ -570,7 +578,7 @@ const Main = () => {
       let frame
       try {
         frame = JSON.parse(msg.data)
-      } catch (error) {
+      } catch {
         updateLog({ time: getTime(), type: logTypes.error, message: `Received malformed WebSocket frame: ${String(msg.data).slice(0, 500)}` })
         return
       }
@@ -606,13 +614,13 @@ const Main = () => {
         return <Alert severity={nextStep.severity} variant='outlined' sx={{ mb: 2.5, alignItems: 'center' }}><Typography component='span' sx={{ fontWeight: 800 }}>{nextStep.title}.</Typography>{` ${nextStep.text}`}</Alert>
       })()}
       <Grid container spacing={2.5}>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <ChargePoint ws={ws} setWs={setWs} status={status} setStatus={setStatus} centralSystemSend={centralSystemSend} />
           {
             uploading
               ? <Paper sx={{mt: 2.5, p: 2}}>
                   <Box display='flex' alignItems='center'>
-                    <img src='./sand.png' alt='upload animation' height={36} />
+                    <img src={`${import.meta.env.BASE_URL}sand.png`} alt='upload animation' height={36} />
                     <Typography variant='body2' ml={1} color='primary' >SIMULATE UPLOAD DIAGNOSTICS FILE</Typography>
                     <Typography variant='h5' ml={0.5} color='primary' >{seconds > 9 ? seconds : `0${seconds}`}</Typography>
                     <Typography variant='bod1' ml={0.5} color='primary' >sec.</Typography>
@@ -621,7 +629,7 @@ const Main = () => {
               : null
           }
         </Grid>
-        <Grid item xs={12} md={4.5}>
+        <Grid size={{ xs: 12, md: 4.5 }}>
         { connectedStatuses.includes(status.status)
           ? <Connector id={1} status={status} centralSystemSend={centralSystemSend} settings={conOne} setSettings={setConOne} />
           : <Paper sx={{ p: 3, height: '100%', minHeight: 270, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', background: 'linear-gradient(145deg, #fff 0%, #f8fbff 100%)' }}>
@@ -633,7 +641,7 @@ const Main = () => {
             </Paper>
         }
         </Grid>
-        <Grid item xs={12} md={4.5}>
+        <Grid size={{ xs: 12, md: 4.5 }}>
           { settingsState.mainSettings.numberOfConnectors === 2 && connectedStatuses.includes(status.status)
             ? <Connector id={2} status={status} centralSystemSend={centralSystemSend} settings={conTwo} setSettings={setConTwo} />
             : settingsState.mainSettings.numberOfConnectors === 2
@@ -647,14 +655,14 @@ const Main = () => {
               : null
           }
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <FaultScenarios
             connectorCount={settingsState.mainSettings.numberOfConnectors}
             disabled={!connectedStatuses.includes(status.status)}
             onRunScenario={runFaultScenario}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Paper sx={{p: { xs: 2, sm: 2.5 }}}>
             <Box display='flex' justifyContent='space-between' alignContent='center'>
               <Box>
@@ -677,7 +685,7 @@ const Main = () => {
                 value={logSearch}
                 onChange={(event) => setLogSearch(event.target.value)}
                 sx={{ minWidth: { md: 300 } }}
-                InputProps={{ startAdornment: <InputAdornment position='start'><Search fontSize='small' color='action' /></InputAdornment> }}
+                slotProps={{ input: { startAdornment: <InputAdornment position='start'><Search fontSize='small' color='action' /></InputAdornment> } }}
               />
               <ToggleButtonGroup
                 size='small'
