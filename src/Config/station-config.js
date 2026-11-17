@@ -139,6 +139,11 @@ const stationSettings = {
             key: 'WebSocketPingInterval',
             readonly: false,
             value: '600'
+        },
+        {
+            key: 'AlwaysReject',
+            readonly: false,
+            value: "false"
         }
     ],
     'unknownKey': []

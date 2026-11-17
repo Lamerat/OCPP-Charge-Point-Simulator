@@ -16,9 +16,9 @@ const BootNotification = () => {
   return (
     <Box>
       <Grid container spacing={5}>
-        <Grid item xs={8}>
+        <Grid size={{ xs: 8 }}>
           <Grid container spacing={3}>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label='Charge Point Model'
@@ -31,7 +31,7 @@ const BootNotification = () => {
                   onClick={(e) => setHelpText({ ...helpBootNotification[e.target.name], value: e.target.name})}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label='Charge Point Vendor'
@@ -44,7 +44,7 @@ const BootNotification = () => {
                   onClick={(e) => setHelpText({ ...helpBootNotification[e.target.name], value: e.target.name})}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label='Charge Point Serial Number'
@@ -56,7 +56,7 @@ const BootNotification = () => {
                   onClick={(e) => setHelpText({ ...helpBootNotification[e.target.name], value: e.target.name})}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label='Charge Box Serial Number'
@@ -68,7 +68,7 @@ const BootNotification = () => {
                   onClick={(e) => setHelpText({ ...helpBootNotification[e.target.name], value: e.target.name})}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label='IMSI'
@@ -80,7 +80,7 @@ const BootNotification = () => {
                   onClick={(e) => setHelpText({ ...helpBootNotification[e.target.name], value: e.target.name})}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label='ICCID'
@@ -92,7 +92,7 @@ const BootNotification = () => {
                   onClick={(e) => setHelpText({ ...helpBootNotification[e.target.name], value: e.target.name})}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label='Firmware Version'
@@ -104,7 +104,7 @@ const BootNotification = () => {
                   onClick={(e) => setHelpText({ ...helpBootNotification[e.target.name], value: e.target.name})}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label='Meter Serial Number'
@@ -116,10 +116,10 @@ const BootNotification = () => {
                   onClick={(e) => setHelpText({ ...helpBootNotification[e.target.name], value: e.target.name})}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <Button startIcon={<SaveIcon />} variant='contained' onClick={() => saveSettings(settingsState)}>Save</Button>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <TextField
                   fullWidth
                   label='meterType'
@@ -133,7 +133,7 @@ const BootNotification = () => {
               </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={{ xs: 4 }}>
           {
             helpText === null
             ? null

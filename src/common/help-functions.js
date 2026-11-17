@@ -10,4 +10,12 @@ export const saveSettings = (settings) => {
   connectors[2].idTag = settings?.mainSettings.RFIDTag
 }
 
-export const OCPPDate = (date) => moment(date).format('YYYY-MM-DDTHH:mm:ss').toString() + 'Z'
+export const OCPPDate = (date) => moment.utc(moment(date)).format()
+
+// A blank port deliberately uses the default port for the selected scheme:
+// 80 for ws and 443 for wss.
+export const buildWebSocketUrl = ({ protocol, address, port, chargePointId }) => {
+  const normalizedPort = String(port ?? '').trim()
+  const portSegment = normalizedPort ? `:${normalizedPort}` : ''
+  return `${protocol}://${address}${portSegment}/${chargePointId}`
+}

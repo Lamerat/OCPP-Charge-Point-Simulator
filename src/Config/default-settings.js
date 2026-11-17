@@ -33,6 +33,7 @@ const defaultSettings = {
     firmWareStatus: 'Downloaded',
     connectorOneUnlock: 'Unlocked',
     connectorTwoUnlock: 'Unlocked',
+    remoteStopDisconnect: false,
   }
 }
 

@@ -6,12 +6,15 @@ const metaDataType = {
   bootNotification: {},
   RFIDTag: null,
   status: null,
+  errorCode: null,
+  info: null,
   idTag: null,
   meterStart: null,
   meterStop: null,
   currentMeterValue: null,
   diagnosticStatus: null,
   firmWareStatus: null,
+  stateOfCharge: null,
 }
 
 
@@ -38,8 +41,8 @@ export const sendCommand = (command, metaData) => {
       message = {
         connectorId: metaData.connectorId,
         status: metaData.status,
-        errorCode: 'NoError',
-        info: '',
+        errorCode: metaData.errorCode || 'NoError',
+        info: metaData.info || '',
         timestamp: OCPPDate(new Date()),
         vendorId: '',
         vendorErrorCode: ''
@@ -79,11 +82,33 @@ export const sendCommand = (command, metaData) => {
               { measurand: 'Current.Import', phase: 'L2', unit: 'A', value: '0' },
               { measurand: 'Current.Import', phase: 'L3', unit: 'A', value: '0' },
               { measurand: 'Energy.Active.Import.Register', unit: 'Wh', value: metaData.currentMeterValue.toString() },
-              { measurand: 'Power.Active.Import', unit: 'W', value: '3290' }
-            ]
+              { measurand: 'Power.Active.Import', unit: 'W', value: '3290' },
+              // ✅ New entry for State of Charge (SoC)
+              ...(metaData.stateOfCharge !== undefined
+                ? [{ measurand: 'SoC', unit: 'Percent', value: metaData.stateOfCharge.toString() }]
+                : [])
+                ]
           }
         ]
       }
+      break;
+    case 'StateOfCharge':
+      message = {
+        connectorId: metaData.connectorId,
+        transactionId: metaData.transactionId,
+        meterValue: [
+          {
+            timestamp: OCPPDate(new Date()),
+            sampledValue: [
+              {
+                measurand: 'SoC',
+                unit: 'Percent',
+                value: metaData.stateOfCharge?.toString()
+              }
+            ]
+          }
+        ]
+      };
       break;
     case 'DiagnosticsStatusNotification':
       message = { status: metaData.diagnosticStatus }

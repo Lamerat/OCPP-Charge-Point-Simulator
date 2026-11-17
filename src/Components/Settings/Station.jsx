@@ -17,7 +17,7 @@ const SingleField = ({data}) => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={7}>
+      <Grid size={{ xs: 7 }}>
       {typeof data.value === 'boolean'
         ? <FormControl fullWidth>
             <InputLabel>{data.key}</InputLabel>
@@ -44,7 +44,7 @@ const SingleField = ({data}) => {
           />
       }
       </Grid>
-      <Grid item xs={5}>
+      <Grid size={{ xs: 5 }}>
       <FormGroup>
         <FormControlLabel
           control={
@@ -71,9 +71,9 @@ const Station = () => {
   return (
     <Box>
       <Grid container spacing={3}>
-        { settingsState.stationSettings.map(x => <Grid key={x.key} item xs={4}><Paper sx={{p: 2}}><SingleField data={x}/></Paper></Grid>) }
-        <Grid item xs={4}></Grid><Grid item xs={4}></Grid>
-        <Grid item xs={2}>
+        { settingsState.stationSettings.map(x => <Grid key={x.key} size={{ xs: 4 }}><Paper sx={{p: 2}}><SingleField data={x}/></Paper></Grid>) }
+        <Grid size={{ xs: 4 }}></Grid><Grid size={{ xs: 4 }}></Grid>
+        <Grid size={{ xs: 2 }}>
           <Button startIcon={<SaveIcon />} variant='contained' onClick={() => saveSettings(settingsState)}>Save</Button>
         </Grid>
       </Grid>
