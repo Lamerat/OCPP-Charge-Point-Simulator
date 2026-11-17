@@ -7,7 +7,7 @@ import { mainStatus } from '../../Config/charge-point-settings';
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 
-const animate = '../arrows.gif'
+const animate = `${import.meta.env.BASE_URL}arrows.gif`
 
 const StyledTextField = styled(TextField)({
   '& .MuiOutlinedInput-root': {
@@ -107,12 +107,12 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
 
       <Grid container spacing={3}>
         {/* ID Tag */}
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           <TextField fullWidth disabled value={settings.idTag} label='ID Tag' size='small' />
         </Grid>
 
         {/* Start Transaction */}
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           <Button
             fullWidth
             variant='contained'
@@ -124,7 +124,7 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
         </Grid>
 
         {/* Stop Reason */}
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           <FormControl fullWidth>
             <InputLabel>Stop Reason</InputLabel>
             <Select
@@ -142,14 +142,14 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
         </Grid>
 
         {/* Stop Transaction */}
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           <Button fullWidth variant='contained' disabled={!settings.inTransaction} onClick={() => sendRequest('StopTransaction')}>
             Stop transaction
           </Button>
         </Grid>
 
         {/* Status Notification */}
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
             <Select
@@ -164,17 +164,17 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           <Button fullWidth variant='contained' onClick={() => sendRequest('StatusNotification')}>
             Status notification
           </Button>
         </Grid>
 
         {/* Meter Values */}
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           <TextField label='Start Meter Value' size='small' variant='outlined' fullWidth value={settings.startMeterValue} disabled />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           <FormGroup row>
             <StyledTextField
               disabled={!settings.inTransaction}
@@ -198,7 +198,7 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
         </Grid>
 
         {/* NEW: State of Charge */}
-        <Grid item xs={6}>
+        <Grid size={{ xs: 6 }}>
           <FormGroup row>
             <StyledTextField
               disabled={!settings.inTransaction}
@@ -221,7 +221,7 @@ const Connector = ({ id, status, centralSystemSend, settings, setSettings }) => 
           </FormGroup>
         </Grid>
         {/* Send Meter Value */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Button disabled={!settings.inTransaction} fullWidth variant='contained' onClick={() => sendRequest('MeterValues')}>
             Send Meter Value
           </Button>

@@ -5,6 +5,7 @@ import { pointStatus, connectedStatuses } from '../../Config/charge-point-settin
 import { sendCommand } from '../../OCPP/OCPP-Commands';
 import PropTypes from 'prop-types';
 import { socketInfo } from '../../common/constants';
+import { buildWebSocketUrl } from '../../common/help-functions';
 import { Switch, FormControlLabel } from '@mui/material'
 
 
